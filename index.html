@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Formulário - Emissão de Nota Fiscal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f5;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 2rem 1rem;
+            color: #1a2a3a;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 2rem 2rem;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e8edf2;
+        }
+
+        .form-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0a2540;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-header p {
+            color: #5a6e7a;
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            background: #f8d0e8;
+            color: #1a2a3a;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.8rem 0 1.2rem 0;
+            display: inline-block;
+        }
+
+        .question {
+            margin-bottom: 1.5rem;
+        }
+
+        .question-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1a3a4a;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .required {
+            color: #d9534f;
+            margin-left: 0.2rem;
+        }
+
+        .optional {
+            color: #8ba0ae;
+            font-size: 0.7rem;
+            font-weight: normal;
+            margin-left: 0.5rem;
+            text-transform: none;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            font-size: 0.95rem;
+            border: 1.5px solid #dce4e8;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: 0.2s ease;
+            font-family: inherit;
+            color: #1a2a3a;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #f0a0c0;
+            box-shadow: 0 0 0 3px rgba(240, 160, 192, 0.2);
+        }
+
+        .row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .submit-btn {
+            background: #f8d0e8;
+            color: #1a2a3a;
+            border: none;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: 0.2s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #f0b8d8;
+            transform: translateY(-2px);
+        }
+
+        .loading-message {
+            background: #fff8e1;
+            color: #b26a00;
+            padding: 1rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            border-left: 4px solid #ffc107;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 1rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            border-left: 4px solid #4caf50;
+        }
+
+        .info-badge {
+            background: #f0f4f8;
+            border-left: 4px solid #f0a0c0;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1.8rem;
+            font-size: 0.85rem;
+            color: #2c4e6e;
+        }
+
+        @media (max-width: 640px) {
+            .row-2 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1>👑 Emissão de Nota Fiscal</h1>
+            <p>Preencha os dados abaixo para emissão da sua nota fiscal</p>
+        </div>
+
+        <div class="info-badge">
+            💡 Após o envio dos dados, faremos a emissão da sua Nota Fiscal em até 30 minutos.
+        </div>
+
+        <div id="loadingMessage" class="loading-message">
+            ⏳ Processando e redirecionando para o WhatsApp...
+        </div>
+
+        <form id="notaFiscalForm">
+            <div class="section-title">📋 DADOS FISCAIS</div>
+
+            <div class="question">
+                <div class="question-text">
+                    Nome / Razão Social <span class="required">*</span>
+                </div>
+                <input type="text" name="razaoSocial" placeholder="Digite seu nome completo ou razão social" required>
+            </div>
+
+            <div class="row-2">
+                <div class="question">
+                    <div class="question-text">
+                        CPF ou CNPJ <span class="required">*</span>
+                    </div>
+                    <input type="text" name="cpfCnpj" placeholder="000.000.000-00 ou 00.000.000/0001-00" required>
+                </div>
+
+                <div class="question">
+                    <div class="question-text">
+                        Inscrição Estadual <span class="optional">(se tiver)</span>
+                    </div>
+                    <input type="text" name="inscricaoEstadual" placeholder="Opcional">
+                </div>
+            </div>
+
+            <div class="section-title">📍 ENDEREÇO DE ENTREGA</div>
+
+            <div class="row-2">
+                <div class="question">
+                    <div class="question-text">
+                        Rua <span class="required">*</span>
+                    </div>
+                    <input type="text" name="rua" placeholder="Digite sua rua" required>
+                </div>
+
+                <div class="question">
+                    <div class="question-text">
+                        Número <span class="required">*</span>
+                    </div>
+                    <input type="text" name="numero" placeholder="Número" required>
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div class="question">
+                    <div class="question-text">
+                        Bairro <span class="required">*</span>
+                    </div>
+                    <input type="text" name="bairro" placeholder="Digite seu bairro" required>
+                </div>
+
+                <div class="question">
+                    <div class="question-text">
+                        Cidade <span class="required">*</span>
+                    </div>
+                    <input type="text" name="cidade" placeholder="Digite sua cidade" required>
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div class="question">
+                    <div class="question-text">
+                        Estado <span class="required">*</span>
+                    </div>
+                    <select name="estado" required>
+                        <option value="" disabled selected>Selecione o Estado</option>
+                        <option value="AC">Acre (AC)</option>
+                        <option value="AL">Alagoas (AL)</option>
+                        <option value="AP">Amapá (AP)</option>
+                        <option value="AM">Amazonas (AM)</option>
+                        <option value="BA">Bahia (BA)</option>
+                        <option value="CE">Ceará (CE)</option>
+                        <option value="DF">Distrito Federal (DF)</option>
+                        <option value="ES">Espírito Santo (ES)</option>
+                        <option value="GO">Goiás (GO)</option>
+                        <option value="MA">Maranhão (MA)</option>
+                        <option value="MT">Mato Grosso (MT)</option>
+                        <option value="MS">Mato Grosso do Sul (MS)</option>
+                        <option value="MG">Minas Gerais (MG)</option>
+                        <option value="PA">Pará (PA)</option>
+                        <option value="PB">Paraíba (PB)</option>
+                        <option value="PR">Paraná (PR)</option>
+                        <option value="PE">Pernambuco (PE)</option>
+                        <option value="PI">Piauí (PI)</option>
+                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                        <option value="RN">Rio Grande do Norte (RN)</option>
+                        <option value="RS">Rio Grande do Sul (RS)</option>
+                        <option value="RO">Rondônia (RO)</option>
+                        <option value="RR">Roraima (RR)</option>
+                        <option value="SC">Santa Catarina (SC)</option>
+                        <option value="SP">São Paulo (SP)</option>
+                        <option value="SE">Sergipe (SE)</option>
+                        <option value="TO">Tocantins (TO)</option>
+                    </select>
+                </div>
+
+                <div class="question">
+                    <div class="question-text">
+                        CEP <span class="required">*</span>
+                    </div>
+                    <input type="text" name="cep" placeholder="00000-000" required>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    Telefone para contato <span class="required">*</span>
+                </div>
+                <input type="tel" name="telefone" placeholder="(DDD) 99999-9999" required>
+            </div>
+
+            <div class="section-title">📦 DADOS DO PRODUTO</div>
+
+            <div class="question">
+                <div class="question-text">
+                    Produto / Pedido <span class="required">*</span>
+                </div>
+                <textarea name="produto" rows="2" placeholder="Descreva o produto ou pedido" required></textarea>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    Valor total da mercadoria <span class="required">*</span>
+                </div>
+                <input type="text" name="valorTotal" placeholder="R$ 0,00" required>
+            </div>
+
+            <div class="row-2">
+                <div class="question">
+                    <div class="question-text">
+                        Quantidade de volumes <span class="required">*</span>
+                    </div>
+                    <input type="text" name="quantidadeVolumes" placeholder="Ex: 2 caixas" required>
+                </div>
+
+                <div class="question">
+                    <div class="question-text">
+                        Peso <span class="required">*</span>
+                    </div>
+                    <input type="text" name="peso" placeholder="Ex: 5,5 kg" required>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    Observação <span class="optional">(se precisar)</span>
+                </div>
+                <textarea name="observacao" rows="2" placeholder="Ex: Cor, tamanho, prazo de entrega..."></textarea>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    Estado de Saída da Mercadoria <span class="required">*</span>
+                </div>
+                <select name="estadoSaida" required>
+                    <option value="" disabled selected>Selecione o Estado de Saída</option>
+                    <option value="AC">Acre (AC)</option>
+                    <option value="AL">Alagoas (AL)</option>
+                    <option value="AP">Amapá (AP)</option>
+                    <option value="AM">Amazonas (AM)</option>
+                    <option value="BA">Bahia (BA)</option>
+                    <option value="CE">Ceará (CE)</option>
+                    <option value="DF">Distrito Federal (DF)</option>
+                    <option value="ES">Espírito Santo (ES)</option>
+                    <option value="GO">Goiás (GO)</option>
+                    <option value="MA">Maranhão (MA)</option>
+                    <option value="MT">Mato Grosso (MT)</option>
+                    <option value="MS">Mato Grosso do Sul (MS)</option>
+                    <option value="MG">Minas Gerais (MG)</option>
+                    <option value="PA">Pará (PA)</option>
+                    <option value="PB">Paraíba (PB)</option>
+                    <option value="PR">Paraná (PR)</option>
+                    <option value="PE">Pernambuco (PE)</option>
+                    <option value="PI">Piauí (PI)</option>
+                    <option value="RJ">Rio de Janeiro (RJ)</option>
+                    <option value="RN">Rio Grande do Norte (RN)</option>
+                    <option value="RS">Rio Grande do Sul (RS)</option>
+                    <option value="RO">Rondônia (RO)</option>
+                    <option value="RR">Roraima (RR)</option>
+                    <option value="SC">Santa Catarina (SC)</option>
+                    <option value="SP">São Paulo (SP)</option>
+                    <option value="SE">Sergipe (SE)</option>
+                    <option value="TO">Tocantins (TO)</option>
+                </select>
+            </div>
+
+            <button type="button" id="submitBtn" class="submit-btn">
+                👑 Solicitar Emissão da Nota Fiscal
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingDiv = document.getElementById('loadingMessage');
+        const whatsappNumber = '5562992598631';
+
+        function enviarParaWhatsApp() {
+            const razaoSocial = document.querySelector('input[name="razaoSocial"]').value.trim();
+            const cpfCnpj = document.querySelector('input[name="cpfCnpj"]').value.trim();
+            const inscricaoEstadual = document.querySelector('input[name="inscricaoEstadual"]').value.trim();
+            const rua = document.querySelector('input[name="rua"]').value.trim();
+            const numero = document.querySelector('input[name="numero"]').value.trim();
+            const bairro = document.querySelector('input[name="bairro"]').value.trim();
+            const cidade = document.querySelector('input[name="cidade"]').value.trim();
+            const estado = document.querySelector('select[name="estado"]').value;
+            const cep = document.querySelector('input[name="cep"]').value.trim();
+            const telefone = document.querySelector('input[name="telefone"]').value.trim();
+            const produto = document.querySelector('textarea[name="produto"]').value.trim();
+            const valorTotal = document.querySelector('input[name="valorTotal"]').value.trim();
+            const quantidadeVolumes = document.querySelector('input[name="quantidadeVolumes"]').value.trim();
+            const peso = document.querySelector('input[name="peso"]').value.trim();
+            const observacao = document.querySelector('textarea[name="observacao"]').value.trim();
+            const estadoSaida = document.querySelector('select[name="estadoSaida"]').value;
+
+            if (!razaoSocial) { alert('Por favor, preencha o Nome / Razão Social.'); return; }
+            if (!cpfCnpj) { alert('Por favor, preencha o CPF ou CNPJ.'); return; }
+            if (!rua) { alert('Por favor, preencha a Rua.'); return; }
+            if (!numero) { alert('Por favor, preencha o Número.'); return; }
+            if (!bairro) { alert('Por favor, preencha o Bairro.'); return; }
+            if (!cidade) { alert('Por favor, preencha a Cidade.'); return; }
+            if (!estado) { alert('Selecione o Estado.'); return; }
+            if (!cep) { alert('Por favor, preencha o CEP.'); return; }
+            if (!telefone) { alert('Por favor, preencha o Telefone para contato.'); return; }
+            if (!produto) { alert('Por favor, descreva o Produto / Pedido.'); return; }
+            if (!valorTotal) { alert('Por favor, informe o Valor total da mercadoria.'); return; }
+            if (!quantidadeVolumes) { alert('Por favor, informe a Quantidade de volumes.'); return; }
+            if (!peso) { alert('Por favor, informe o Peso.'); return; }
+            if (!estadoSaida) { alert('Por favor, selecione o Estado de Saída da Mercadoria.'); return; }
+
+            let mensagem = "";
+            mensagem += "📋 DADOS PARA EMISSÃO DE NOTA FISCAL\n\n";
+
+            mensagem += "👤 Nome/Razão Social: " + razaoSocial + "\n";
+            mensagem += "📄 CPF/CNPJ: " + cpfCnpj + "\n";
+            mensagem += "🏢 Inscrição Estadual: " + (inscricaoEstadual || "Não informada") + "\n\n";
+
+            mensagem += "📍 ENDEREÇO\n";
+            mensagem += "🏠 Rua: " + rua + ", Nº " + numero + "\n";
+            mensagem += "📌 Bairro: " + bairro + "\n";
+            mensagem += "🌆 Cidade/UF: " + cidade + "/" + estado + "\n";
+            mensagem += "📮 CEP: " + cep + "\n";
+            mensagem += "📞 Telefone: " + telefone + "\n\n";
+
+            mensagem += "📦 DADOS DO PEDIDO\n";
+            mensagem += "🛒 Produto/Pedido: " + produto + "\n";
+            mensagem += "💰 Valor total: " + valorTotal + "\n";
+            mensagem += "📦 Quantidade de volumes: " + quantidadeVolumes + "\n";
+            mensagem += "⚖ Peso: " + peso + "\n";
+
+            if (observacao) {
+                mensagem += "📝 Observação: " + observacao + "\n";
+            }
+
+            mensagem += "🚚 Estado de Saída: " + estadoSaida + "\n\n";
+
+            mensagem += "👑 Rainha das Emissões agradece pela confiança";
+
+            const mensagemCodificada = encodeURIComponent(mensagem);
+            const whatsappLink = `https://wa.me/${whatsappNumber}?text=${mensagemCodificada}`;
+            
+            loadingDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                window.open(whatsappLink, '_blank');
+                loadingDiv.style.display = 'none';
+                
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-message';
+                successDiv.innerHTML = '✅ Pedido enviado com sucesso! Redirecionando para o WhatsApp... 📱';
+                
+                const oldMsg = document.querySelector('.success-message');
+                if (oldMsg) oldMsg.remove();
+                
+                document.querySelector('.form-card').insertBefore(successDiv, document.querySelector('.info-badge'));
+                document.getElementById('notaFiscalForm').reset();
+                
+                setTimeout(() => { if (successDiv) successDiv.remove(); }, 5000);
+            }, 500);
+        }
+
+        submitBtn.addEventListener('click', enviarParaWhatsApp);
+    })();
+</script>
+</body>
+</html>
