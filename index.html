@@ -189,11 +189,11 @@
         </div>
 
         <div class="info-badge">
-            💡 Após o envio dos dados, faremos a emissão da sua Nota Fiscal em até 30 minutos.
+            💡 Após enviar, você será redirecionado ao seu WhatsApp para confirmar o envio dos dados.
         </div>
 
         <div id="loadingMessage" class="loading-message">
-            ⏳ Processando e redirecionando para o WhatsApp...
+            ⏳ Preparando mensagem e redirecionando para o seu WhatsApp...
         </div>
 
         <form id="notaFiscalForm">
@@ -394,9 +394,12 @@
     (function() {
         const submitBtn = document.getElementById('submitBtn');
         const loadingDiv = document.getElementById('loadingMessage');
-        const whatsappNumber = '5562992598631';
+        // SEU NÚMERO (destinatário) - substitua pelo seu número com código do país
+        // Exemplo: 5562999999999 (55 é Brasil, 62 é DDD)
+        const SEU_NUMERO = '5562992598631'; // <-- COLOQUE SEU NÚMERO AQUI
 
         function enviarParaWhatsApp() {
+            // Coleta todos os dados do formulário
             const razaoSocial = document.querySelector('input[name="razaoSocial"]').value.trim();
             const cpfCnpj = document.querySelector('input[name="cpfCnpj"]').value.trim();
             const inscricaoEstadual = document.querySelector('input[name="inscricaoEstadual"]').value.trim();
@@ -414,70 +417,90 @@
             const observacao = document.querySelector('textarea[name="observacao"]').value.trim();
             const estadoSaida = document.querySelector('select[name="estadoSaida"]').value;
 
-            if (!razaoSocial) { alert('Por favor, preencha o Nome / Razão Social.'); return; }
-            if (!cpfCnpj) { alert('Por favor, preencha o CPF ou CNPJ.'); return; }
-            if (!rua) { alert('Por favor, preencha a Rua.'); return; }
-            if (!numero) { alert('Por favor, preencha o Número.'); return; }
-            if (!bairro) { alert('Por favor, preencha o Bairro.'); return; }
-            if (!cidade) { alert('Por favor, preencha a Cidade.'); return; }
-            if (!estado) { alert('Selecione o Estado.'); return; }
-            if (!cep) { alert('Por favor, preencha o CEP.'); return; }
-            if (!telefone) { alert('Por favor, preencha o Telefone para contato.'); return; }
-            if (!produto) { alert('Por favor, descreva o Produto / Pedido.'); return; }
-            if (!valorTotal) { alert('Por favor, informe o Valor total da mercadoria.'); return; }
-            if (!quantidadeVolumes) { alert('Por favor, informe a Quantidade de volumes.'); return; }
-            if (!peso) { alert('Por favor, informe o Peso.'); return; }
-            if (!estadoSaida) { alert('Por favor, selecione o Estado de Saída da Mercadoria.'); return; }
+            // Validações
+            if (!razaoSocial) { alert('Por favor, preencha o Nome / Razão Social.'); return false; }
+            if (!cpfCnpj) { alert('Por favor, preencha o CPF ou CNPJ.'); return false; }
+            if (!rua) { alert('Por favor, preencha a Rua.'); return false; }
+            if (!numero) { alert('Por favor, preencha o Número.'); return false; }
+            if (!bairro) { alert('Por favor, preencha o Bairro.'); return false; }
+            if (!cidade) { alert('Por favor, preencha a Cidade.'); return false; }
+            if (!estado) { alert('Selecione o Estado.'); return false; }
+            if (!cep) { alert('Por favor, preencha o CEP.'); return false; }
+            if (!telefone) { alert('Por favor, preencha o Telefone para contato.'); return false; }
+            if (!produto) { alert('Por favor, descreva o Produto / Pedido.'); return false; }
+            if (!valorTotal) { alert('Por favor, informe o Valor total da mercadoria.'); return false; }
+            if (!quantidadeVolumes) { alert('Por favor, informe a Quantidade de volumes.'); return false; }
+            if (!peso) { alert('Por favor, informe o Peso.'); return false; }
+            if (!estadoSaida) { alert('Por favor, selecione o Estado de Saída da Mercadoria.'); return false; }
 
+            // Monta a mensagem que será enviada para VOCÊ (destinatário)
             let mensagem = "";
-            mensagem += "📋 DADOS PARA EMISSÃO DE NOTA FISCAL\n\n";
-
-            mensagem += "👤 Nome/Razão Social: " + razaoSocial + "\n";
-            mensagem += "📄 CPF/CNPJ: " + cpfCnpj + "\n";
-            mensagem += "🏢 Inscrição Estadual: " + (inscricaoEstadual || "Não informada") + "\n\n";
-
-            mensagem += "📍 ENDEREÇO\n";
-            mensagem += "🏠 Rua: " + rua + ", Nº " + numero + "\n";
-            mensagem += "📌 Bairro: " + bairro + "\n";
-            mensagem += "🌆 Cidade/UF: " + cidade + "/" + estado + "\n";
-            mensagem += "📮 CEP: " + cep + "\n";
-            mensagem += "📞 Telefone: " + telefone + "\n\n";
-
-            mensagem += "📦 DADOS DO PEDIDO\n";
-            mensagem += "🛒 Produto/Pedido: " + produto + "\n";
-            mensagem += "💰 Valor total: " + valorTotal + "\n";
-            mensagem += "📦 Quantidade de volumes: " + quantidadeVolumes + "\n";
-            mensagem += "⚖ Peso: " + peso + "\n";
-
-            if (observacao) {
-                mensagem += "📝 Observação: " + observacao + "\n";
-            }
-
-            mensagem += "🚚 Estado de Saída: " + estadoSaida + "\n\n";
-
-            mensagem += "👑 Rainha das Emissões agradece pela confiança";
-
-            const mensagemCodificada = encodeURIComponent(mensagem);
-            const whatsappLink = `https://wa.me/${whatsappNumber}?text=${mensagemCodificada}`;
+            mensagem += "📋 *NOVA SOLICITAÇÃO DE NOTA FISCAL* 📋\n\n";
+            mensagem += "👤 *Nome/Razão Social:* " + razaoSocial + "\n";
+            mensagem += "📄 *CPF/CNPJ:* " + cpfCnpj + "\n";
+            mensagem += "🏢 *Inscrição Estadual:* " + (inscricaoEstadual || "Não informada") + "\n\n";
             
+            mensagem += "📍 *ENDEREÇO DE ENTREGA*\n";
+            mensagem += "🏠 *Endereço:* " + rua + ", " + numero + "\n";
+            mensagem += "📌 *Bairro:* " + bairro + "\n";
+            mensagem += "🌆 *Cidade/UF:* " + cidade + "/" + estado + "\n";
+            mensagem += "📮 *CEP:* " + cep + "\n";
+            mensagem += "📞 *Telefone:* " + telefone + "\n\n";
+            
+            mensagem += "📦 *DADOS DO PRODUTO*\n";
+            mensagem += "🛒 *Produto/Pedido:* " + produto + "\n";
+            mensagem += "💰 *Valor total:* " + valorTotal + "\n";
+            mensagem += "📦 *Quantidade de volumes:* " + quantidadeVolumes + "\n";
+            mensagem += "⚖️ *Peso:* " + peso + "\n";
+            
+            if (observacao) {
+                mensagem += "📝 *Observação:* " + observacao + "\n";
+            }
+            
+            mensagem += "🚚 *Estado de Saída:* " + estadoSaida + "\n\n";
+            mensagem += "👑 *Rainha das Emissões* - Aguardando emissão da NF.";
+            
+            // Codifica a mensagem para URL
+            const mensagemCodificada = encodeURIComponent(mensagem);
+            
+            // Cria o link do WhatsApp com SEU número como destinatário
+            // Isso vai abrir o WhatsApp do usuário, com a mensagem pronta para ser enviada para VOCÊ
+            const whatsappLink = `https://wa.me/${SEU_NUMERO}?text=${mensagemCodificada}`;
+            
+            // Mostra mensagem de loading
             loadingDiv.style.display = 'block';
             
+            // Pequeno delay para dar tempo de mostrar o loading
             setTimeout(() => {
+                // Abre o WhatsApp do usuário (se estiver no celular, abre o app; se no PC, abre WhatsApp Web)
                 window.open(whatsappLink, '_blank');
-                loadingDiv.style.display = 'none';
                 
+                // Mostra mensagem de sucesso
                 const successDiv = document.createElement('div');
                 successDiv.className = 'success-message';
-                successDiv.innerHTML = '✅ Pedido enviado com sucesso! Redirecionando para o WhatsApp... 📱';
+                successDiv.innerHTML = '✅ Mensagem preparada! Redirecionamos para o seu WhatsApp. Basta clicar em enviar para concluir. 📱';
                 
                 const oldMsg = document.querySelector('.success-message');
                 if (oldMsg) oldMsg.remove();
                 
-                document.querySelector('.form-card').insertBefore(successDiv, document.querySelector('.info-badge'));
-                document.getElementById('notaFiscalForm').reset();
+                const infoBadge = document.querySelector('.info-badge');
+                document.querySelector('.form-card').insertBefore(successDiv, infoBadge);
                 
-                setTimeout(() => { if (successDiv) successDiv.remove(); }, 5000);
+                // Esconde o loading
+                loadingDiv.style.display = 'none';
+                
+                // Reseta o formulário após 1 segundo
+                setTimeout(() => {
+                    document.getElementById('notaFiscalForm').reset();
+                }, 1000);
+                
+                // Remove a mensagem de sucesso após 5 segundos
+                setTimeout(() => { 
+                    if (successDiv) successDiv.remove(); 
+                }, 5000);
             }, 500);
+            
+            return true;
         }
 
         submitBtn.addEventListener('click', enviarParaWhatsApp);
