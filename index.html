@@ -136,37 +136,120 @@
             transform: translateY(-2px);
         }
 
-        .loading-message {
-            background: #fff8e1;
-            color: #b26a00;
-            padding: 1rem;
-            border-radius: 16px;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            font-weight: 500;
+        /* Modal de resumo */
+        .modal {
             display: none;
-            border-left: 4px solid #ffc107;
-        }
-
-        .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
             padding: 1rem;
-            border-radius: 16px;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            font-weight: 500;
-            border-left: 4px solid #4caf50;
         }
 
-        .info-badge {
-            background: #f0f4f8;
-            border-left: 4px solid #f0a0c0;
-            padding: 1rem 1.2rem;
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f8d0e8;
+        }
+
+        .modal-header h3 {
+            color: #1a2a3a;
+            font-size: 1.3rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            transition: 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #d9534f;
+        }
+
+        .resumo-texto {
+            background: #f8f9fa;
+            padding: 1rem;
             border-radius: 12px;
-            margin-bottom: 1.8rem;
+            font-family: monospace;
             font-size: 0.85rem;
-            color: #2c4e6e;
+            white-space: pre-wrap;
+            margin: 1rem 0;
+            border: 1px solid #e0e0e0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            transition: 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+        }
+
+        .copy-success {
+            text-align: center;
+            color: #4caf50;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: none;
         }
 
         @media (max-width: 640px) {
@@ -189,11 +272,7 @@
         </div>
 
         <div class="info-badge">
-            💡 Após o envio dos dados, você receberá um comprovante no seu WhatsApp.
-        </div>
-
-        <div id="loadingMessage" class="loading-message">
-            ⏳ Processando e redirecionando para o seu WhatsApp...
+            💡 Após preencher, gere um resumo dos dados para enviar para quem precisar.
         </div>
 
         <form id="notaFiscalForm">
@@ -390,98 +469,128 @@
     </div>
 </div>
 
+<!-- Modal de Resumo -->
+<div id="resumoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📋 Resumo da Solicitação</h3>
+            <button class="close-modal" onclick="fecharModal()">&times;</button>
+        </div>
+        <p style="margin-bottom: 0.5rem; color: #666;">Copie o texto abaixo e cole onde desejar:</p>
+        <div id="resumoTexto" class="resumo-texto"></div>
+        <button class="copy-btn" onclick="copiarResumo()">📋 Copiar Texto</button>
+        <button class="whatsapp-btn" onclick="enviarWhatsApp()">📱 Enviar via WhatsApp</button>
+        <div id="copySuccess" class="copy-success">✅ Texto copiado com sucesso!</div>
+    </div>
+</div>
+
 <script>
-    (function() {
-        const submitBtn = document.getElementById('submitBtn');
-        const loadingDiv = document.getElementById('loadingMessage');
+    let resumoGerado = '';
 
-        function enviarParaWhatsApp() {
-            const razaoSocial = document.querySelector('input[name="razaoSocial"]').value.trim();
-            const cpfCnpj = document.querySelector('input[name="cpfCnpj"]').value.trim();
-            const inscricaoEstadual = document.querySelector('input[name="inscricaoEstadual"]').value.trim();
-            const rua = document.querySelector('input[name="rua"]').value.trim();
-            const numero = document.querySelector('input[name="numero"]').value.trim();
-            const bairro = document.querySelector('input[name="bairro"]').value.trim();
-            const cidade = document.querySelector('input[name="cidade"]').value.trim();
-            const estado = document.querySelector('select[name="estado"]').value;
-            const cep = document.querySelector('input[name="cep"]').value.trim();
-            const telefone = document.querySelector('input[name="telefone"]').value.trim();
-            const produto = document.querySelector('textarea[name="produto"]').value.trim();
-            const valorTotal = document.querySelector('input[name="valorTotal"]').value.trim();
-            const quantidadeVolumes = document.querySelector('input[name="quantidadeVolumes"]').value.trim();
-            const peso = document.querySelector('input[name="peso"]').value.trim();
-            const observacao = document.querySelector('textarea[name="observacao"]').value.trim();
-            const estadoSaida = document.querySelector('select[name="estadoSaida"]').value;
+    function gerarResumo() {
+        const razaoSocial = document.querySelector('input[name="razaoSocial"]').value.trim();
+        const cpfCnpj = document.querySelector('input[name="cpfCnpj"]').value.trim();
+        const inscricaoEstadual = document.querySelector('input[name="inscricaoEstadual"]').value.trim();
+        const rua = document.querySelector('input[name="rua"]').value.trim();
+        const numero = document.querySelector('input[name="numero"]').value.trim();
+        const bairro = document.querySelector('input[name="bairro"]').value.trim();
+        const cidade = document.querySelector('input[name="cidade"]').value.trim();
+        const estado = document.querySelector('select[name="estado"]').value;
+        const cep = document.querySelector('input[name="cep"]').value.trim();
+        const telefone = document.querySelector('input[name="telefone"]').value.trim();
+        const produto = document.querySelector('textarea[name="produto"]').value.trim();
+        const valorTotal = document.querySelector('input[name="valorTotal"]').value.trim();
+        const quantidadeVolumes = document.querySelector('input[name="quantidadeVolumes"]').value.trim();
+        const peso = document.querySelector('input[name="peso"]').value.trim();
+        const observacao = document.querySelector('textarea[name="observacao"]').value.trim();
+        const estadoSaida = document.querySelector('select[name="estadoSaida"]').value;
 
-            if (!razaoSocial) { alert('Por favor, preencha o Nome / Razão Social.'); return; }
-            if (!cpfCnpj) { alert('Por favor, preencha o CPF ou CNPJ.'); return; }
-            if (!rua) { alert('Por favor, preencha a Rua.'); return; }
-            if (!numero) { alert('Por favor, preencha o Número.'); return; }
-            if (!bairro) { alert('Por favor, preencha o Bairro.'); return; }
-            if (!cidade) { alert('Por favor, preencha a Cidade.'); return; }
-            if (!estado) { alert('Selecione o Estado.'); return; }
-            if (!cep) { alert('Por favor, preencha o CEP.'); return; }
-            if (!telefone) { alert('Por favor, preencha o Telefone para contato.'); return; }
-            if (!produto) { alert('Por favor, descreva o Produto / Pedido.'); return; }
-            if (!valorTotal) { alert('Por favor, informe o Valor total da mercadoria.'); return; }
-            if (!quantidadeVolumes) { alert('Por favor, informe a Quantidade de volumes.'); return; }
-            if (!peso) { alert('Por favor, informe o Peso.'); return; }
-            if (!estadoSaida) { alert('Por favor, selecione o Estado de Saída da Mercadoria.'); return; }
+        // Validações
+        if (!razaoSocial) { alert('Por favor, preencha o Nome / Razão Social.'); return false; }
+        if (!cpfCnpj) { alert('Por favor, preencha o CPF ou CNPJ.'); return false; }
+        if (!rua) { alert('Por favor, preencha a Rua.'); return false; }
+        if (!numero) { alert('Por favor, preencha o Número.'); return false; }
+        if (!bairro) { alert('Por favor, preencha o Bairro.'); return false; }
+        if (!cidade) { alert('Por favor, preencha a Cidade.'); return false; }
+        if (!estado) { alert('Selecione o Estado.'); return false; }
+        if (!cep) { alert('Por favor, preencha o CEP.'); return false; }
+        if (!telefone) { alert('Por favor, preencha o Telefone para contato.'); return false; }
+        if (!produto) { alert('Por favor, descreva o Produto / Pedido.'); return false; }
+        if (!valorTotal) { alert('Por favor, informe o Valor total da mercadoria.'); return false; }
+        if (!quantidadeVolumes) { alert('Por favor, informe a Quantidade de volumes.'); return false; }
+        if (!peso) { alert('Por favor, informe o Peso.'); return false; }
+        if (!estadoSaida) { alert('Por favor, selecione o Estado de Saída da Mercadoria.'); return false; }
 
-            // Limpa o telefone e adiciona código do Brasil
-            const telefoneLimpo = telefone.replace(/\D/g, '');
-            let telefoneCompleto = telefoneLimpo;
-            if (!telefoneLimpo.startsWith('55')) {
-                telefoneCompleto = '55' + telefoneLimpo;
-            }
-
-            let mensagem = "";
-            mensagem += "📋 DADOS PARA EMISSÃO DE NOTA FISCAL\n\n";
-            mensagem += "👤 Nome/Razão Social: " + razaoSocial + "\n";
-            mensagem += "📄 CPF/CNPJ: " + cpfCnpj + "\n";
-            mensagem += "🏢 Inscrição Estadual: " + (inscricaoEstadual || "Não informada") + "\n\n";
-            mensagem += "📍 ENDEREÇO\n";
-            mensagem += "🏠 Rua: " + rua + ", Nº " + numero + "\n";
-            mensagem += "📌 Bairro: " + bairro + "\n";
-            mensagem += "🌆 Cidade/UF: " + cidade + "/" + estado + "\n";
-            mensagem += "📮 CEP: " + cep + "\n";
-            mensagem += "📞 Telefone: " + telefone + "\n\n";
-            mensagem += "📦 DADOS DO PEDIDO\n";
-            mensagem += "🛒 Produto/Pedido: " + produto + "\n";
-            mensagem += "💰 Valor total: " + valorTotal + "\n";
-            mensagem += "📦 Quantidade de volumes: " + quantidadeVolumes + "\n";
-            mensagem += "⚖ Peso: " + peso + "\n";
-            if (observacao) {
-                mensagem += "📝 Observação: " + observacao + "\n";
-            }
-            mensagem += "🚚 Estado de Saída: " + estadoSaida + "\n\n";
-            mensagem += "👑 Rainha das Emissões agradece pela confiança";
-
-            const mensagemCodificada = encodeURIComponent(mensagem);
-            const whatsappLink = `https://wa.me/${telefoneCompleto}?text=${mensagemCodificada}`;
-            
-            loadingDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                window.open(whatsappLink, '_blank');
-                loadingDiv.style.display = 'none';
-                
-                const successDiv = document.createElement('div');
-                successDiv.className = 'success-message';
-                successDiv.innerHTML = '✅ Solicitação registrada! Redirecionando para o seu WhatsApp... 📱';
-                
-                const oldMsg = document.querySelector('.success-message');
-                if (oldMsg) oldMsg.remove();
-                
-                document.querySelector('.form-card').insertBefore(successDiv, document.querySelector('.info-badge'));
-                document.getElementById('notaFiscalForm').reset();
-                
-                setTimeout(() => { if (successDiv) successDiv.remove(); }, 5000);
-            }, 500);
+        // Monta o resumo
+        let resumo = "";
+        resumo += "📋 DADOS PARA EMISSÃO DE NOTA FISCAL\n\n";
+        resumo += "👤 Nome/Razão Social: " + razaoSocial + "\n";
+        resumo += "📄 CPF/CNPJ: " + cpfCnpj + "\n";
+        resumo += "🏢 Inscrição Estadual: " + (inscricaoEstadual || "Não informada") + "\n\n";
+        resumo += "📍 ENDEREÇO\n";
+        resumo += "🏠 Rua: " + rua + ", Nº " + numero + "\n";
+        resumo += "📌 Bairro: " + bairro + "\n";
+        resumo += "🌆 Cidade/UF: " + cidade + "/" + estado + "\n";
+        resumo += "📮 CEP: " + cep + "\n";
+        resumo += "📞 Telefone: " + telefone + "\n\n";
+        resumo += "📦 DADOS DO PEDIDO\n";
+        resumo += "🛒 Produto/Pedido: " + produto + "\n";
+        resumo += "💰 Valor total: " + valorTotal + "\n";
+        resumo += "📦 Quantidade de volumes: " + quantidadeVolumes + "\n";
+        resumo += "⚖ Peso: " + peso + "\n";
+        if (observacao) {
+            resumo += "📝 Observação: " + observacao + "\n";
         }
+        resumo += "🚚 Estado de Saída: " + estadoSaida + "\n\n";
+        resumo += "👑 Rainha das Emissões agradece pela confiança";
 
-        submitBtn.addEventListener('click', enviarParaWhatsApp);
-    })();
+        return resumo;
+    }
+
+    function mostrarModal() {
+        resumoGerado = gerarResumo();
+        if (resumoGerado) {
+            document.getElementById('resumoTexto').innerText = resumoGerado;
+            document.getElementById('resumoModal').style.display = 'flex';
+            
+            // Reset do botão de cópia
+            document.getElementById('copySuccess').style.display = 'none';
+        }
+    }
+
+    function fecharModal() {
+        document.getElementById('resumoModal').style.display = 'none';
+    }
+
+    function copiarResumo() {
+        const texto = document.getElementById('resumoTexto').innerText;
+        navigator.clipboard.writeText(texto).then(() => {
+            const successMsg = document.getElementById('copySuccess');
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 2000);
+        });
+    }
+
+    function enviarWhatsApp() {
+        const texto = document.getElementById('resumoTexto').innerText;
+        const textoCodificado = encodeURIComponent(texto);
+        
+        // Abre o WhatsApp para a pessoa escolher para quem enviar
+        window.open(`https://wa.me/?text=${textoCodificado}`, '_blank');
+    }
+
+    // Fecha modal ao clicar fora
+    window.onclick = function(event) {
+        const modal = document.getElementById('resumoModal');
+        if (event.target === modal) {
+            fecharModal();
+        }
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.addEventListener('click', mostrarModal);
 </script>
 </body>
 </html>
